@@ -1,0 +1,122 @@
+<svg width="100%" viewBox="0 0 680 620" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Circumplex Model of Emotion</title>
+  <desc>A 2D circular model mapping emotions along two axes: Valence (negative to positive, x-axis) and Arousal (low to high, y-axis). Emotions cluster in four quadrants.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: sans-serif; fill: #1a1a1a; }
+      .th { font-size: 14px; font-weight: 500; }
+      .ts { font-size: 12px; font-weight: 400; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="680" height="620" fill="#ffffff"/>
+
+  <!-- Quadrant background fills -->
+  <path d="M340 300 L100 300 L100 60 L340 60 Z" fill="#fee2e2" opacity="0.5"/>
+  <path d="M340 300 L340 60 L580 60 L580 300 Z" fill="#dcfce7" opacity="0.5"/>
+  <path d="M340 300 L100 300 L100 540 L340 540 Z" fill="#f3f4f6" opacity="0.8"/>
+  <path d="M340 300 L340 540 L580 540 L580 300 Z" fill="#dbeafe" opacity="0.5"/>
+
+  <!-- Circle outline -->
+  <circle cx="340" cy="300" r="228" fill="none" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="4 4"/>
+
+  <!-- Axes -->
+  <line x1="90" y1="300" x2="590" y2="300" stroke="#374151" stroke-width="1" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <line x1="340" y1="560" x2="340" y2="40" stroke="#374151" stroke-width="1" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+
+  <!-- Axis labels -->
+  <text class="th" x="340" y="30" text-anchor="middle">High Arousal</text>
+  <text class="ts" x="340" y="46" text-anchor="middle" fill="#6b7280">(Activated)</text>
+  <text class="th" x="340" y="580" text-anchor="middle">Low Arousal</text>
+  <text class="ts" x="340" y="596" text-anchor="middle" fill="#6b7280">(Deactivated)</text>
+  <text class="th" x="78" y="296" text-anchor="end">Negative</text>
+  <text class="ts" x="78" y="312" text-anchor="end" fill="#6b7280">(Unpleasant)</text>
+  <text class="th" x="602" y="296" text-anchor="start">Positive</text>
+  <text class="ts" x="602" y="312" text-anchor="start" fill="#6b7280">(Pleasant)</text>
+
+  <!-- Quadrant labels -->
+  <text class="ts" x="175" y="90" text-anchor="middle" fill="#dc2626" font-weight="500">STRESSED / ALARMED</text>
+  <text class="ts" x="505" y="90" text-anchor="middle" fill="#16a34a" font-weight="500">EXCITED / ELATED</text>
+  <text class="ts" x="175" y="530" text-anchor="middle" fill="#6b7280" font-weight="500">DEPRESSED / BORED</text>
+  <text class="ts" x="505" y="530" text-anchor="middle" fill="#2563eb" font-weight="500">CALM / RELAXED</text>
+
+  <!-- Q2: High Arousal + Negative -->
+  <circle cx="160" cy="100" r="5" fill="#D85A30"/>
+  <text class="ts" x="172" y="104">Panic</text>
+  <circle cx="155" cy="140" r="5" fill="#D85A30"/>
+  <text class="ts" x="167" y="144">Fear</text>
+  <circle cx="175" cy="175" r="5" fill="#D85A30"/>
+  <text class="ts" x="187" y="179">Rage</text>
+  <circle cx="210" cy="210" r="5" fill="#D85A30"/>
+  <text class="ts" x="222" y="214">Anger</text>
+  <circle cx="195" cy="155" r="5" fill="#D85A30"/>
+  <text class="ts" x="207" y="159">Anxiety</text>
+  <circle cx="245" cy="140" r="5" fill="#D85A30"/>
+  <text class="ts" x="257" y="144">Stress</text>
+  <circle cx="230" cy="175" r="5" fill="#D85A30"/>
+  <text class="ts" x="242" y="179">Disgust</text>
+  <circle cx="260" cy="110" r="5" fill="#D85A30"/>
+  <text class="ts" x="272" y="114">Shock</text>
+
+  <!-- Q1: High Arousal + Positive -->
+  <circle cx="520" cy="100" r="5" fill="#1D9E75"/>
+  <text class="ts" x="472" y="104" text-anchor="end">Euphoria</text>
+  <circle cx="510" cy="135" r="5" fill="#1D9E75"/>
+  <text class="ts" x="462" y="139" text-anchor="end">Excitement</text>
+  <circle cx="490" cy="165" r="5" fill="#1D9E75"/>
+  <text class="ts" x="442" y="169" text-anchor="end">Ecstasy</text>
+  <circle cx="470" cy="200" r="5" fill="#1D9E75"/>
+  <text class="ts" x="422" y="204" text-anchor="end">Enthusiasm</text>
+  <circle cx="460" cy="235" r="5" fill="#1D9E75"/>
+  <text class="ts" x="412" y="239" text-anchor="end">Joy</text>
+  <circle cx="420" cy="165" r="5" fill="#1D9E75"/>
+  <text class="ts" x="372" y="169" text-anchor="end">Pride</text>
+  <circle cx="390" cy="135" r="5" fill="#1D9E75"/>
+  <text class="ts" x="342" y="139" text-anchor="end">Awe</text>
+  <circle cx="440" cy="125" r="5" fill="#1D9E75"/>
+  <text class="ts" x="392" y="129" text-anchor="end">Hope</text>
+
+  <!-- Q3: Low Arousal + Negative -->
+  <circle cx="165" cy="490" r="5" fill="#888780"/>
+  <text class="ts" x="177" y="494">Despair</text>
+  <circle cx="200" cy="450" r="5" fill="#888780"/>
+  <text class="ts" x="212" y="454">Sadness</text>
+  <circle cx="175" cy="420" r="5" fill="#888780"/>
+  <text class="ts" x="187" y="424">Grief</text>
+  <circle cx="240" cy="470" r="5" fill="#888780"/>
+  <text class="ts" x="252" y="474">Boredom</text>
+  <circle cx="260" cy="500" r="5" fill="#888780"/>
+  <text class="ts" x="272" y="504">Apathy</text>
+  <circle cx="220" cy="395" r="5" fill="#888780"/>
+  <text class="ts" x="232" y="399">Loneliness</text>
+  <circle cx="255" cy="360" r="5" fill="#888780"/>
+  <text class="ts" x="267" y="364">Melancholy</text>
+  <circle cx="230" cy="330" r="5" fill="#888780"/>
+  <text class="ts" x="242" y="334">Shame</text>
+
+  <!-- Q4: Low Arousal + Positive -->
+  <circle cx="505" cy="490" r="5" fill="#185FA5"/>
+  <text class="ts" x="493" y="494" text-anchor="end">Serenity</text>
+  <circle cx="490" cy="450" r="5" fill="#185FA5"/>
+  <text class="ts" x="478" y="454" text-anchor="end">Contentment</text>
+  <circle cx="465" cy="415" r="5" fill="#185FA5"/>
+  <text class="ts" x="453" y="419" text-anchor="end">Relaxed</text>
+  <circle cx="440" cy="380" r="5" fill="#185FA5"/>
+  <text class="ts" x="428" y="384" text-anchor="end">Gratitude</text>
+  <circle cx="415" cy="415" r="5" fill="#185FA5"/>
+  <text class="ts" x="403" y="419" text-anchor="end">Nostalgia</text>
+  <circle cx="480" cy="380" r="5" fill="#185FA5"/>
+  <text class="ts" x="468" y="384" text-anchor="end">Love</text>
+  <circle cx="420" cy="350" r="5" fill="#185FA5"/>
+  <text class="ts" x="408" y="354" text-anchor="end">Relief</text>
+  <circle cx="450" cy="345" r="5" fill="#185FA5"/>
+  <text class="ts" x="438" y="349" text-anchor="end">Tenderness</text>
+
+  <!-- Center dot -->
+  <circle cx="340" cy="300" r="4" fill="#9ca3af"/>
+  <text class="ts" x="340" y="290" text-anchor="middle" fill="#9ca3af">Neutral</text>
+</svg>
