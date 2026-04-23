@@ -6,6 +6,7 @@ __pycache__/
 .venv/
 venv/
 env/
+frontend/src/ResultsScreen.jsx
 
 # Data science
 .ipynb_checkpoints/
@@ -13,6 +14,7 @@ env/
 dist/
 build/
 .cache/
+.cache
 
 # OS
 .DS_Store

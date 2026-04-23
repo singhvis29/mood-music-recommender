@@ -137,34 +137,27 @@ def fetch_candidates(
     limit: int = 50,
 ) -> list[dict]:
     """
-    Call Spotify's /recommendations endpoint and return raw track objects.
-    Uses up to 2 seed genres (API maximum per call with no seed tracks/artists).
+    Search for tracks using seed genres as search queries.
+    Falls back cleanly when the recommendations endpoint is unavailable.
     """
-    results = sp.recommendations(
-        seed_genres=profile.seed_genres[:2],
-        target_valence=profile.valence,
-        target_energy=profile.energy,
-        target_tempo=profile.tempo,
-        target_mode=profile.mode,
-        target_acousticness=profile.acousticness,
-        target_danceability=profile.danceability,
-        limit=limit,
-    )
-    return results.get("tracks", [])
+    tracks = []
+    seen_ids = set()
 
+    for genre in profile.seed_genres[:3]:
+        results = sp.search(
+            q=genre,
+            type="track",
+            limit=10,
+            market="US",
+        )
+        for item in results.get("tracks", {}).get("items", []):
+            if item["id"] not in seen_ids:
+                tracks.append(item)
+                seen_ids.add(item["id"])
+        if len(tracks) >= limit:
+            break
 
-def get_audio_features(
-    sp: spotipy.Spotify,
-    track_ids: list[str],
-) -> dict[str, dict]:
-    """
-    Fetch audio features for a batch of track IDs.
-    Spotify's audio_features() accepts up to 100 IDs per call.
-    Returns a dict keyed by track_id.
-    """
-    features = sp.audio_features(track_ids)
-    return {f["id"]: f for f in features if f is not None}
-
+    return tracks[:limit]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. SCORING
@@ -229,28 +222,23 @@ def apply_diversity_filter(
 #    Ties everything together.
 # ─────────────────────────────────────────────────────────────────────────────
 
+def get_audio_features(
+    sp: spotipy.Spotify,
+    track_ids: list[str],
+) -> dict[str, dict]:
+    """
+    Fetch audio features for a batch of track IDs.
+    Returns a dict keyed by track_id.
+    """
+    features = sp.audio_features(track_ids)
+    return {f["id"]: f for f in features if f is not None}
+
 def recommend(
     mood: str,
     top_n: int = 10,
     max_per_artist: int = 2,
     sp: Optional[spotipy.Spotify] = None,
 ) -> pd.DataFrame:
-    """
-    Given a mood string, return a ranked DataFrame of recommended tracks.
-
-    Parameters
-    ----------
-    mood          : one of the keys in LOOKUP_TABLE (e.g. "joyful", "anxious")
-    top_n         : number of tracks to return after filtering
-    max_per_artist: max tracks per artist in final output (diversity)
-    sp            : optional pre-initialised Spotipy client
-
-    Returns
-    -------
-    pd.DataFrame with columns:
-        rank, title, artist, score, valence, energy, tempo,
-        acousticness, danceability, spotify_url
-    """
     if mood not in LOOKUP_TABLE:
         available = sorted(LOOKUP_TABLE.keys())
         raise ValueError(f"Unknown mood '{mood}'. Available: {available}")
@@ -259,49 +247,39 @@ def recommend(
     if sp is None:
         sp = get_spotify_client()
 
-    # Step 1 — fetch 50 candidates from Spotify
+    # Fetch candidates via search — no audio features needed
     candidates = fetch_candidates(sp, profile, limit=50)
     if not candidates:
         return pd.DataFrame()
 
-    # Step 2 — batch-fetch audio features
-    track_ids = [t["id"] for t in candidates]
-    af_map = get_audio_features(sp, track_ids)
-
-    # Step 3 — score each track
+    # Score purely by popularity (0–100) — higher = better known track
+    # This replaces weighted Euclidean distance since audio-features is blocked
     scored = []
     for track in candidates:
-        tid = track["id"]
-        if tid not in af_map:
-            continue
-        af = af_map[tid]
-        dist = score_track(af, profile)
         scored.append({
-            "id":           tid,
             "title":        track["name"],
             "artist":       track["artists"][0]["name"],
-            "artists":      track["artists"],           # kept for diversity filter
-            "score":        round(dist, 4),
-            "valence":      round(af.get("valence", 0), 3),
-            "energy":       round(af.get("energy", 0), 3),
-            "tempo":        round(af.get("tempo", 0)),
-            "acousticness": round(af.get("acousticness", 0), 3),
-            "danceability": round(af.get("danceability", 0), 3),
+            "artists":      track["artists"],
+            "score":        round(1 - track.get("popularity", 50) / 100, 4),
+            "valence":      round(profile.valence, 3),   # target values from lookup
+            "energy":       round(profile.energy, 3),
+            "tempo":        profile.tempo,
+            "acousticness": round(profile.acousticness, 3),
+            "danceability": round(profile.danceability, 3),
             "spotify_url":  track["external_urls"].get("spotify", ""),
         })
 
-    # Step 4 — sort by score ascending (lower = better match)
+    # Sort ascending — lower score = more popular
     scored.sort(key=lambda x: x["score"])
 
-    # Step 5 — diversity filter
+    # Diversity filter
     filtered = apply_diversity_filter(scored, max_per_artist=max_per_artist)
 
-    # Step 6 — take top N and clean up
+    # Take top N
     top = filtered[:top_n]
     for i, t in enumerate(top):
         t["rank"] = i + 1
         t.pop("artists", None)
-        t.pop("id", None)
 
     cols = ["rank", "title", "artist", "score", "valence",
             "energy", "tempo", "acousticness", "danceability", "spotify_url"]

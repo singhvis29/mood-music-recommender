@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 
 /* ─── Google Fonts ─────────────────────────────────────────────────────────── */
 ;(function () {
@@ -339,10 +339,108 @@ function PlaneScreen({ mood, coords, onCoordsChange, onConfirm, onBack }) {
 /* ═══════════════════════════════════════════════════════════════════════════════
    SCREEN 3 — Results
 ═══════════════════════════════════════════════════════════════════════════════ */
+const API_BASE = "http://localhost:8000"
+
 function ResultsScreen({ mood, coords, onReset }) {
-  const tracks  = MOCK_TRACKS[mood.zone]
+  const [tracks,  setTracks]  = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
+
   const zoneCol = ZONE_COLOR[mood.zone]
-  const maxScore = Math.max(...tracks.map(t => t.score))
+
+  // Fetch real tracks from the FastAPI backend on mount
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    fetch(`${API_BASE}/recommend/${mood.id}`)
+      .then((res) => {
+        if (!res.ok) {
+          return res.json().then((body) => {
+            throw new Error(body.detail || `Server error ${res.status}`)
+          })
+        }
+        return res.json()
+      })
+      .then((data) => {
+        setTracks(data.tracks)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [mood.id])
+
+  // ── Loading state ──────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 16 }}>
+        <div style={{ fontSize: 32 }}>{mood.emoji}</div>
+        <p style={{ fontSize: 14, color: T.textMid, fontWeight: 300 }}>
+          Finding music for <em style={{ color: T.accent }}>{mood.label.toLowerCase()}</em>…
+        </p>
+        {/* Simple animated dots */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: T.accent, opacity: 0.3,
+                animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50%       { opacity: 1;   transform: scale(1.3); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // ── Error state ────────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px 0" }}>
+        <div style={{ ...centerColumn }}>
+          <div style={{
+            background: T.surface, border: `0.5px solid ${T.border}`,
+            borderRadius: 12, padding: "20px 20px", marginBottom: 20,
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: T.text, marginBottom: 6 }}>
+              Could not fetch recommendations
+            </p>
+            <p style={{ fontSize: 12, color: T.textMid, lineHeight: 1.6 }}>{error}</p>
+            <p style={{ fontSize: 11, color: T.textDim, marginTop: 10, lineHeight: 1.6 }}>
+              Make sure the Python backend is running:<br />
+              <code style={{ fontFamily: "monospace", color: T.accent }}>
+                uvicorn backend.api:app --reload --port 8000
+              </code>
+            </p>
+          </div>
+          <button
+            onClick={onReset}
+            style={{
+              width: "100%", padding: "13px 24px", background: "none",
+              border: `0.5px solid ${T.borderHi}`, borderRadius: 12,
+              color: T.textMid, fontSize: 14, cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            ← Start over
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Results ────────────────────────────────────────────────────────────────
+  const maxScore = tracks.length > 0 ? Math.max(...tracks.map((t) => t.score)) : 1
 
   return (
     <div style={{ minHeight: "100vh", padding: "48px 0" }}>
@@ -365,12 +463,11 @@ function ResultsScreen({ mood, coords, onReset }) {
             {[
               { label: `valence ${coords.v.toFixed(2)}`, col: T.positive },
               { label: `energy ${coords.e.toFixed(2)}`,  col: "#e87050"  },
-              { label: mood.zone,                          col: zoneCol    },
+              { label: mood.zone,                         col: zoneCol    },
             ].map(({ label, col }) => (
               <span key={label} style={{
                 fontSize: 11, padding: "3px 10px", borderRadius: 20,
-                background: col + "18", color: col,
-                border: `0.5px solid ${col}40`,
+                background: col + "18", color: col, border: `0.5px solid ${col}40`,
               }}>
                 {label}
               </span>
@@ -386,17 +483,13 @@ function ResultsScreen({ mood, coords, onReset }) {
               <div
                 key={i}
                 style={{
-                  background: T.surface,
-                  border: `0.5px solid ${T.border}`,
-                  borderRadius: 12,
-                  padding: "14px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
+                  background: T.surface, border: `0.5px solid ${T.border}`,
+                  borderRadius: 12, padding: "14px 16px",
+                  display: "flex", alignItems: "center", gap: 14,
                   transition: "border-color 0.15s",
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = T.borderHi}
-                onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = T.borderHi)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = T.border)}
               >
                 {/* Rank */}
                 <div style={{
@@ -408,7 +501,7 @@ function ResultsScreen({ mood, coords, onReset }) {
                   color: i === 0 ? T.accent : T.textDim,
                   flexShrink: 0,
                 }}>
-                  {i + 1}
+                  {track.rank}
                 </div>
 
                 {/* Title & artist */}
@@ -416,9 +509,7 @@ function ResultsScreen({ mood, coords, onReset }) {
                   <div style={{ fontSize: 14, fontWeight: 500, color: T.text, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {track.title}
                   </div>
-                  <div style={{ fontSize: 12, color: T.textMid }}>
-                    {track.artist}
-                  </div>
+                  <div style={{ fontSize: 12, color: T.textMid }}>{track.artist}</div>
                 </div>
 
                 {/* Match score */}
@@ -428,30 +519,27 @@ function ResultsScreen({ mood, coords, onReset }) {
                   </div>
                   <div style={{ width: 48, height: 3, background: T.border, borderRadius: 2, overflow: "hidden" }}>
                     <div style={{
-                      height: "100%",
-                      width: `${matchPct}%`,
+                      height: "100%", width: `${matchPct}%`,
                       background: i === 0 ? T.accent : zoneCol,
-                      borderRadius: 2,
-                      opacity: i === 0 ? 1 : 0.6,
+                      borderRadius: 2, opacity: i === 0 ? 1 : 0.6,
                     }} />
                   </div>
                 </div>
 
-                {/* Spotify link (mock) */}
+                {/* Spotify link */}
                 <a
-                  href={`https://open.spotify.com/search/${encodeURIComponent(track.title + " " + track.artist)}`}
+                  href={track.spotify_url || `https://open.spotify.com/search/${encodeURIComponent(track.title + " " + track.artist)}`}
                   target="_blank"
                   rel="noreferrer"
                   style={{
                     width: 30, height: 30, borderRadius: "50%",
                     background: "#1DB954",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0, textDecoration: "none",
-                    transition: "opacity 0.15s",
+                    flexShrink: 0, textDecoration: "none", transition: "opacity 0.15s",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
-                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-                  title="Search on Spotify"
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                  title="Open on Spotify"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                     <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
@@ -462,26 +550,17 @@ function ResultsScreen({ mood, coords, onReset }) {
           })}
         </div>
 
-        {/* Note about mock data */}
-        <p style={{ fontSize: 11, color: T.textDim, textAlign: "center", marginBottom: 20, lineHeight: 1.6 }}>
-          These are placeholder results. Connect to the Python backend<br />
-          to get live Spotify recommendations.
-        </p>
-
         {/* Reset */}
         <button
           onClick={onReset}
           style={{
-            width: "100%", padding: "14px 24px",
-            background: "none",
-            border: `0.5px solid ${T.borderHi}`,
-            borderRadius: 12, color: T.textMid,
-            fontSize: 14, cursor: "pointer",
-            fontFamily: "'DM Sans', sans-serif",
-            transition: "all 0.15s",
+            width: "100%", padding: "14px 24px", background: "none",
+            border: `0.5px solid ${T.borderHi}`, borderRadius: 12,
+            color: T.textMid, fontSize: 14, cursor: "pointer",
+            fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
           }}
-          onMouseEnter={e => { e.target.style.background = T.surface; e.target.style.color = T.text }}
-          onMouseLeave={e => { e.target.style.background = "none";    e.target.style.color = T.textMid }}
+          onMouseEnter={(e) => { e.target.style.background = T.surface; e.target.style.color = T.text }}
+          onMouseLeave={(e) => { e.target.style.background = "none";    e.target.style.color = T.textMid }}
         >
           ← Start over
         </button>
