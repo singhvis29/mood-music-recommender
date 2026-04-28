@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import traceback
 
-from backend.mood_music_recommender import recommend, list_moods, LOOKUP_TABLE
+from mood_music_recommender import recommend, list_moods, LOOKUP_TABLE
 
 app = FastAPI(title="Mood Music API", version="1.0.0")
 
