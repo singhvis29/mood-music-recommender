@@ -30,7 +30,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5175",                                   # local dev
-        "https://mood-music-recommender-zeta.vercel.app",          # production
+        "https://mood-music-recommender-git-main-vishal-s-projects1.vercel.app" # production
     ],
     allow_credentials=False,
     allow_methods=["*"],
