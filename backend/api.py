@@ -29,8 +29,8 @@ app = FastAPI(title="Mood Music API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5175",                                   # local dev
-        "https://mood-music-recommender-git-main-vishal-s-projects1.vercel.app" # production
+        "http://localhost:5175",
+        "https://mood-music-recommender-zeta.vercel.app",
     ],
     allow_credentials=False,
     allow_methods=["*"],
