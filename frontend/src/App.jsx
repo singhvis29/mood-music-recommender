@@ -376,6 +376,7 @@ function ResultsScreen({ mood, coords, onReset }) {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 16 }}>
+        <p style={{ fontSize: 11, color: "red", position: "fixed", top: 8, left: 8 }}>{import.meta.env.VITE_API_BASE || "UNDEFINED"}</p>
         <div style={{ fontSize: 32 }}>{mood.emoji}</div>
         <p style={{ fontSize: 14, color: T.textMid, fontWeight: 300 }}>
           Finding music for <em style={{ color: T.accent }}>{mood.label.toLowerCase()}</em>…
