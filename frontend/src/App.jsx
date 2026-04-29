@@ -352,9 +352,15 @@ function ResultsScreen({ mood, coords, onReset }) {
   useEffect(() => {
     setLoading(true)
     setError(null)
-
-    fetch(`${API_BASE}/recommend/${mood.id}`)
+  
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, 60000)  // 60 second timeout
+  
+    fetch(`${API_BASE}/recommend/${mood.id}`, { signal: controller.signal })
       .then((res) => {
+        clearTimeout(timeout)
         if (!res.ok) {
           return res.json().then((body) => {
             throw new Error(body.detail || `Server error ${res.status}`)
@@ -367,7 +373,12 @@ function ResultsScreen({ mood, coords, onReset }) {
         setLoading(false)
       })
       .catch((err) => {
-        setError(err.message)
+        clearTimeout(timeout)
+        if (err.name === "AbortError") {
+          setError("Server is waking up — please try again in 30 seconds.")
+        } else {
+          setError(err.message)
+        }
         setLoading(false)
       })
   }, [mood.id])
@@ -376,7 +387,6 @@ function ResultsScreen({ mood, coords, onReset }) {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 16 }}>
-        <p style={{ fontSize: 11, color: "red", position: "fixed", top: 8, left: 8 }}>{import.meta.env.VITE_API_BASE || "UNDEFINED"}</p>
         <div style={{ fontSize: 32 }}>{mood.emoji}</div>
         <p style={{ fontSize: 14, color: T.textMid, fontWeight: 300 }}>
           Finding music for <em style={{ color: T.accent }}>{mood.label.toLowerCase()}</em>…
