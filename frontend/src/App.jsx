@@ -350,16 +350,20 @@ function ResultsScreen({ mood, coords, onReset }) {
 
   // Fetch real tracks from the FastAPI backend on mount
   useEffect(() => {
+    console.log("useEffect fired, mood:", mood.id)
+    console.log("API_BASE:", API_BASE)
     setLoading(true)
     setError(null)
   
     const controller = new AbortController()
     const timeout = setTimeout(() => {
+      console.log("TIMEOUT fired — aborting")
       controller.abort()
-    }, 60000)  // 60 second timeout
+    }, 60000)
   
     fetch(`${API_BASE}/recommend/${mood.id}`, { signal: controller.signal })
       .then((res) => {
+        console.log("fetch response status:", res.status)
         clearTimeout(timeout)
         if (!res.ok) {
           return res.json().then((body) => {
@@ -369,10 +373,12 @@ function ResultsScreen({ mood, coords, onReset }) {
         return res.json()
       })
       .then((data) => {
+        console.log("tracks received:", data.tracks.length)
         setTracks(data.tracks)
         setLoading(false)
       })
       .catch((err) => {
+        console.log("fetch error:", err.name, err.message)
         clearTimeout(timeout)
         if (err.name === "AbortError") {
           setError("Server is waking up — please try again in 30 seconds.")
